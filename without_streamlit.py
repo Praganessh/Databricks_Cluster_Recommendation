@@ -20,27 +20,30 @@ def calculate_job_durations(df, job_id=None):
     # Convert start_time and end_time to datetime
     df['start_time'] = pd.to_datetime(df['start_time'])
     df['end_time'] = pd.to_datetime(df['end_time'])
-
-    # Calculate duration in minutes for each row
-    df['duration_minutes'] = (df['end_time'] - df['start_time']).dt.total_seconds() / 60.0
-
+    
+    # Group by cluster_id and calculate duration
+    duration_df = (
+        df.groupby('cluster_id')
+        .apply(lambda group: (group['end_time'].max() - group['start_time'].min()).total_seconds() / 60)
+        .reset_index(name='duration_mins')
+    )
+ 
+    new_df = pd.merge(df,duration_df,on="cluster_id")
+        
     # Filter by specific job_id if provided
     if job_id:
-        filtered_df = df[df['cluster_job_id'] == job_id]
+        filtered_df = new_df[new_df['cluster_job_id'] == job_id]
     else:
-        filtered_df = df
-
+        filtered_df = new_df
+ 
     # Group by cluster_id and calculate total duration for each cluster
-    cluster_durations = filtered_df.groupby('cluster_id')['duration_minutes'].sum().reset_index()
-
-    # Calculate average duration for the job
-    average_duration = cluster_durations['duration_minutes'].mean()
-
+    unique_cluster_ids = filtered_df.drop_duplicates(subset='cluster_id')
+    average_duration = unique_cluster_ids['duration_mins'].mean()
+ 
+ 
     return {
-        'cluster_durations': cluster_durations,
         'average_duration': average_duration
     }
-
 
 # -------------------------------------------------------------
 # Function to validate CSV columns
