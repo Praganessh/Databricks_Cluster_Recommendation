@@ -368,6 +368,7 @@ def generate_bulk_recommendations(df):
                 "Old Driver Instance": driver_current_instance,
                 "Old Min Workers": current_min_workers,
                 "Old Max Workers": current_max_workers,
+                "Old Duration": duration,
                 "New Worker Instance": multi_recs["Worker Instance"][i],
                 "New Driver Instance": multi_recs["Driver Instance"][i],
                 "New Min Workers": multi_recs["Min Workers"][i],
@@ -508,6 +509,7 @@ def analyze_job(df, cluster_job_id):
             "Old Driver Instance": [driver_current_instance] * 3,
             "Old Min Workers": [current_min_workers] * 3,
             "Old Max Workers": [current_max_workers] * 3,
+            "Old Duration" : [duration] * 3,
             "New Worker Instance": multi_recs["Worker Instance"][:3],
             "New Driver Instance": multi_recs["Driver Instance"][:3],
             "New Min Workers": multi_recs["Min Workers"][:3],
@@ -598,8 +600,8 @@ def process_csv_file(csv_path,format):
 
 
 if __name__ == "__main__":
-    df = spark.sql('''select * from tfs_ml_cluster.databricks_jobs_data''')
-    results = process_csv_file(df,format='df')
+    df = spark.sql('''select * from tfs_ml_cluster.databricks_jobs_data''').toPandas()
+    # results = process_csv_file(df,format='df')
     job_analysis = analyze_job(df, "1123321794075745")
     
     #Save recommendations to CSV
