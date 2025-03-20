@@ -2,8 +2,8 @@ SELECT
   job_id,
   run_id,
   COUNT(*) AS number_of_tables,
-  FIRST(project),
-  COLLECT_LIST(STRUCT(table_name, row_count, run_time_secs, extract_type, src_sys_cd)) AS metadata
+  FIRST(project) AS project,
+  COLLECT_LIST(STRUCT(table_name, row_count, (run_time_secs)/60 as run_time, extract_type, src_sys_cd)) AS metadata
 FROM
   (
     SELECT
